@@ -52,7 +52,7 @@ static bool pkt_contains(const knot_pkt_t *packet, const knot_rrset_t *rrset)
 	return false;
 }
 
-/*! \brief Free all RRSets and reset RRSet count. */
+/*! \brief Free all RRSets and other data and reset RRSet count. */
 static void pkt_free_data(knot_pkt_t *pkt)
 {
 	assert(pkt);
@@ -68,6 +68,10 @@ static void pkt_free_data(knot_pkt_t *pkt)
 	/* Free EDNS option positions. */
 	mm_free(&pkt->mm, pkt->edns_opts);
 	pkt->edns_opts = 0;
+
+	/* Free lowercased QNAME. */
+	mm_free(&pkt->mm, pkt->lower_qname);
+	pkt->lower_qname = NULL;
 }
 
 /*! \brief Allocate new wireformat of given length, assuming *pkt is zeroed. */
@@ -315,10 +319,6 @@ static void payload_clear(knot_pkt_t *pkt)
 	/* Reset TSIG wire reference. */
 	pkt->tsig_wire.pos = NULL;
 	pkt->tsig_wire.len = 0;
-
-	/* Free lowercased QNAME. */
-	mm_free(&pkt->mm, pkt->lower_qname);
-	pkt->lower_qname = NULL;
 }
 
 _public_
